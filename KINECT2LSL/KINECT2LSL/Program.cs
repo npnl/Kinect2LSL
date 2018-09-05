@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using LSL;
 using Microsoft.Kinect;
+using System.Threading;
 
 namespace Kinect2lsl
 {
@@ -31,19 +32,25 @@ namespace Kinect2lsl
             liblsl.StreamInfo KINECTinfo = new liblsl.StreamInfo("KINECT" + "_raw", "KINECTpos_raw", channels, 24, liblsl.channel_format_t.cf_float32, "Microsoft");
             KINECToutlet = new liblsl.StreamOutlet(KINECTinfo);
             streaming = true;
-            ReadKinect();
+            Thread thisThread = new Thread(ReadKinect)
+            {
+                IsBackground = true,
+                Name = "threadKinect"
+            };
+            thisThread.Start();
+            
         }
 
         private void ReadKinect()
         {
-            while (streaming)
-            {
+            //while (streaming)
+            //{
                 _sensor = KinectSensor.GetDefault();
 
-                //if (_sensor != null)
-                if (_sensor.IsAvailable)
+                if (_sensor != null)
+                //if (_sensor.IsAvailable)
                 {
-                    Console.WriteLine("Streaming Kinect to LSL.\nPress any key to finish...");
+                    //Console.WriteLine("Streaming Kinect to LSL.\nPress any key to finish...");
                     _sensor.Open();
 
                     _reader = _sensor.OpenMultiSourceFrameReader(FrameSourceTypes.Color | FrameSourceTypes.Depth | FrameSourceTypes.Infrared | FrameSourceTypes.Body);
@@ -52,9 +59,9 @@ namespace Kinect2lsl
                 else
                 {
                     Console.WriteLine("Couldn't find Kinect sensor.\nPress any key to finish...");
-                    break;
+                    //break;
                 }
-            }
+            //}
         }
 
         void Reader_MultiSourceFrameArrived(object sender, MultiSourceFrameArrivedEventArgs e)
